@@ -8,10 +8,11 @@ class Game:
 		log.info("Starting the Game class")
 		self.agents = []
 		self.history = []
-		self.attendance = []
 		self.round = 0
-		self.agSeries = {}
+		self.correctDecision = None
 		self.rounds = {}
+
+		self.generateRandomHistory()
 
 	def __str__(self):
 		return "Inside Game Class"
@@ -24,15 +25,29 @@ class Game:
 			# args[3] = numberOfStrategies
 			for i in range(args[1]):
 				self.agents.append( agent.ClassicAgent(args[2], args[3]) )
-				# self.agSeries[self.agents[i].id] = []
-				# self.agSeries.append( pd.Series([], name=self.agents[i].id) )
 
-			for rnd in range(args[2]):
-				np.random.seed
-				self.history.append( np.random.randint(2) )
+		elif(args[0] == 'producer'):
+			# args[1] = numberOfAgents
+			# args[2] = brainSize
+			for i in range(args[1]):
+				self.agents.append( agent.ProducerAgent(args[2]) )
 
-			log.info("Initial history: ")
-			log.info(self.history)
+		elif(args[0] == 'speculator'):
+			# args[1] = numberOfAgents
+			# args[2] = brainSize
+			# args[3] = numberOfStrategies
+			# args[4] = epsilon (control parameter for zero strategy)
+			for i in range(args[1]):
+				self.agents.append( agent.SpeculatorAgent(args[2], args[3], args[4]) )
+
+	def generateRandomHistory(self):
+		histRange = 16
+		for rnd in range(histRange):
+			np.random.seed
+			self.history.append( np.random.randint(2) )
+
+		log.info("Initial history: ")
+		log.info(self.history)
 
 	def runRound(self):
 		# elaborate agent decisions
@@ -40,17 +55,16 @@ class Game:
 		for (i, ag) in enumerate(self.agents):
 			ag.makeDecision(self)
 			# get agents decision and append it to attendance list
-			agDecision = ag.getDecision()
-			att.append(agDecision)
-			# self.agSeries[self.agents[i].id].append(agDecision)
+			att.append(ag.getDecision())
 
 		# save attendance to the self.attendance list with the round number
-		self.attendance.append((self.round, sum(att)))
+		# self.attendance.append((self.round, sum(att)))
 		self.rounds[self.round] = att
 
 		# update all agents states, that update their strategies
-		correctDecision = 1 if ( self.attendance[-1][1] <= (len(self.agents)/2) ) else 0
-		self.history.append(correctDecision)
+		# correctDecision = 1 if ( self.attendance[-1][1] <= (len(self.agents)/2) ) else 0
+		self.calculateDecision()
+		self.history.append(self.correctDecision)
 		for ag in self.agents:
 			ag.updateState(self)
 
@@ -60,13 +74,32 @@ class Game:
 		for i in range(n):
 			self.runRound()
 
+	def calculateDecision(self):
+		log.debug('Calculating correct decision inside game class')
+		att = []
+		log.debug(att)
+		for a in self.agents:
+			# if agent participated at this round
+			# else his decison is None and should
+			# not be included in calculating attendance 
+			desc = a.getDecision()
+			if (desc is not None): att.append(desc)
+
+		log.debug(att)
+		self.correctDecision = 1 if ( sum(att)<=len(att)/2 ) else 0
+		log.debug(self.correctDecision)
+
 	def saveResults(self, filename, dirname):
-		# out = pd.DataFrame(self.agSeries)
 		out = pd.DataFrame(self.rounds)
 		out.to_csv(dirname + filename)
 
-	def saveHistory(self, filename, dirname):
-		out = pd.DataFrame(self.history)
+	def saveAgentsScores(self, filename, dirname):
+		out = {}
+		for a in self.agents:
+			name = str(a.type) + str(a.id)
+			out[name] = a.score
+
+		out = pd.DataFrame(out)
 		out.to_csv(dirname + filename)
 
 	def saveAgents(self, filename, dirname):
@@ -80,6 +113,3 @@ class Game:
 				f.write(str(s.getStrat())  + '\n')
 
 			f.write("----------------------\n")
-
-	def getAttendance(self):
-		return self.attendance

@@ -9,7 +9,7 @@ class Agent:
 		self.type = agentType
 		self.id = self.generateID()
 		self.history = []		
-		self.score = 0
+		self.score = [0]
 		self.verbose = False
 		log.info("Creating agent of type " + self.type)
 		log.info(self.id)
@@ -20,12 +20,15 @@ class Agent:
 	def makeDecision(self, game):
 		pass
 
+	def generateStrats(self):
+		pass
+
 	def __str__(self):
 		return "Agent %s!" % self.id
 
 class ClassicAgent(Agent):
 	def __init__(self, brainSize, nStrats):
-		Agent.__init__(self, "classical")
+		Agent.__init__(self, "classic")
 
 		# memory available to the agent
 		self.brainSize = brainSize
@@ -81,21 +84,18 @@ class ClassicAgent(Agent):
 		# log.info("Agent made the decision!")
 		# log.info(self.decision)
 
-		# # update various stuff around agent and strategy class
-		# self.updateState(game)
-
 	def updateState(self, game):
 		# add current decision to the agents history
 		self.dHistory.append((game.round, self.decision))
 		# update the score, if agent won +1 or -1 if lost
-		correctDecision = 1 if ( game.attendance[-1][1] <= (len(game.agents)/2) ) else 0
-		if self.decision == correctDecision:
-			self.score += 1
+		# correctDecision = 1 if ( game.attendance[-1][1] <= (len(game.agents)/2) ) else 0
+		if self.decision == game.correctDecision:
+			self.score.append(self.score[-1] + 1)
 		else:
-			self.score -= 1
+			self.score.append(self.score[-1] - 1)
 		# update all the strategy scores
 		for s in self.strats:
-			s.updateState(game.round, correctDecision)
+			s.updateState(game.round, game.correctDecision)
 
 		if(self.verbose):
 			f = open('../agent', 'a')
@@ -112,3 +112,48 @@ class ClassicAgent(Agent):
 
 	def getDecision(self):
 		return self.decision
+
+''' Producer Agent
+	Use in a MG to simulate markets, it always participates
+	in the game with only one strategy, increasing thus the information
+	in the model for speculators to use
+'''
+class ProducerAgent(ClassicAgent):
+	def __init__(self, brainSize):
+		# producer is just a classical agent with 1 strategy...
+		ClassicAgent.__init__(self, brainSize, 1)
+		self.type = "producer"
+
+''' Speculator Agent
+	Use in a MG to simulate markets, it participates
+	in the game with only multiple strategies, 
+	but only when it has a strategy that will give him
+	benefit.
+'''
+
+class SpeculatorAgent(ClassicAgent):
+	def __init__(self, brainSize, nStrats, epsilon):
+		ClassicAgent.__init__(self, brainSize, nStrats)
+		self.type = "speculator"
+		self.epsilon = epsilon
+		# zero strategy is appended to the list of already existing strategies
+		self.strats.append( strategy.ZeroStrat( self.brainSize, self.epsilon ) )
+
+	# almost identical to the Classic Agent method
+	# difference is that Speculator can abstain from participating
+	# maintaining its score same if it is not profitable for him (zero strategy wins)
+	def updateState(self, game):
+		# add current decision to the agents history
+		self.dHistory.append((game.round, self.decision))
+		# update the score, if agent won +1 or -1 if lost
+		# correctDecision = 1 if ( game.attendance[-1][1] <= (len(game.agents)/2) ) else 0
+		if self.decision == game.correctDecision:
+			self.score.append(self.score[-1] + 1)
+		elif self.decision == None:
+			# zero strategy won, just repeat the score
+			self.score.append(self.score[-1])
+		else:
+			self.score.append(self.score[-1] - 1)
+		# update all the strategy scores
+		for s in self.strats:
+			s.updateState(game.round, game.correctDecision)

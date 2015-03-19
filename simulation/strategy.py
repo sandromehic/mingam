@@ -8,14 +8,33 @@ class Strategy:
 		self.type = strategyType
 		self.vScore = 0
 		self.rScore = 0
+		# decision take at last round (calculated with calculateDecision method
+		# and retrieved with getDecision method)
+		self.decision = None
+		# strategy that is to be initialized inside a child class
+		self.strat = []
+
+	def calculateDecision(self, hist):
+		# by default, a strategy should have claculateDecision method
+		pass
+
+	def getDecision(self):
+		return self.decision
+
+	def getVScore(self):
+		return self.vScore
+
+	def getRScore(self):
+		return self.rScore
+
+	def getStrat(self):
+		return self.strat
 
 class ClassicStrat(Strategy):
 	def __init__(self, brainSize):
 		Strategy.__init__(self, "classical")
 		log.info("Creating classical strategy of brainsize %s" % brainSize)
 		self.brainSize = brainSize
-		self.strat = []
-		self.decision = 0
 		self.dHistory = []
 		self.generateStrategy()
 
@@ -54,11 +73,23 @@ class ClassicStrat(Strategy):
 		else:
 			self.vScore -= 1
 
-	def getVScore(self):
-		return self.vScore
+class ZeroStrat(Strategy):
+	'''
+	This strategy responds with None at every history istance. It is needed
+	as a control strategy for Speculator Agents. It increases its virtual score
+	at every round by a small amount epsilon, and thus ensures that only the
+	strategies that have performed well over time will have higher virtual score
+	and will be able to participate in the game.
+	'''
+	def __init__(self, brainSize, epsilon):
+		Strategy.__init__(self, "zero")
+		log.info("Creating zero strategy of brainsize %s" % brainSize)
+		self.brainSize = brainSize
+		self.epsilon = epsilon
+		self.generateStrategy()
 
-	def getDecision(self):
-		return self.decision
+	def updateState(self, round, correctDecision):
+		self.vScore += self.epsilon
 
-	def getStrat(self):
-		return self.strat
+	def generateStrategy(self):
+		self.strat = [None] * 2**self.brainSize
