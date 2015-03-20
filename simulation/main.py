@@ -37,13 +37,16 @@ nAgents = [101]
 # nAgents.extend(range(501,801,100))
 # nAgents.extend(range(1001,2001,250))
 # memory = range(2,7)
-memory = [4]
+# nAgents = [2**a for a in range(4,10)]
+memory = range(2,13)
 nRounds = 10000
-runs = 3
+runs = 32
 S = 2
 
 i = 0
 totalGames = len(memory) * len(nAgents) * runs
+# totalGames2 = len(memory) * len(nAgents[:len(nAgents)-1]) * runs
+# totalGames = totalGames + 2*totalGames2	
 
 for x in range(runs):
 	print "Starting run number {}".format(x)
@@ -52,10 +55,7 @@ for x in range(runs):
 		i+=1
 
 		g = game.Game()
-		# g.addAgents('classic', N-1, M, S)
-		g.addAgents('producer', 64, M, S)
-		g.addAgents('speculator', 11, M, S, 0.01)
-		# g.addAgents('producer', int((N/2)+1), M)
+		g.addAgents('classic', N, M, S)
 		
 		# make the last agent verbose so we can debug his decisions
 		# g.agents[-1].verbose = True
@@ -63,7 +63,7 @@ for x in range(runs):
 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
 		g.runRounds(nRounds)
 		
-		saveDirname = '../data/test2/'
+		saveDirname = '../data/different_brainsize/'
 		name = ['M', str(M), 'N', str(N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), '.game']
 		g.saveResults('_'.join(name), saveDirname)
 		
@@ -72,4 +72,94 @@ for x in range(runs):
 
 		name = ['M', str(M), 'N', str(N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), '.score']
 		g.saveAgentsScores('_'.join(name), saveDirname)
-		# g.printTest()
+ 		# g.printTest()
+
+# for x in range(runs):
+# 	print "Starting run number {}".format(x)
+# 	for M, N in product(memory, nAgents):
+
+# 		i+=1
+
+# 		g = game.Game()
+# 		# g.addAgents('classic', N-1, M, S)
+# 		g.addAgents('producer', N, M, S)
+# 		g.addAgents('speculator', N, M, S, 0.01)
+# 		# g.addAgents('producer', int((N/2)+1), M)
+		
+# 		# make the last agent verbose so we can debug his decisions
+# 		# g.agents[-1].verbose = True
+
+# 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
+# 		g.runRounds(nRounds)
+		
+# 		saveDirname = '../data/same_producers_speculators/'
+# 		name = ['M', str(M), 'N', str(N+N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), 'prod', str(N), 'spec', str(N)]
+# 		name.append('.game')
+# 		g.saveResults('_'.join(name), saveDirname)
+# 		name.remove('.game')
+# 		name.append('.agents')
+# 		g.saveAgents('_'.join(name), saveDirname)
+# 		name.remove('.agents')
+# 		name.append('.score')
+# 		g.saveAgentsScores('_'.join(name), saveDirname)
+# 		name.remove('.score')
+
+# for x in range(runs):
+# 	print "Starting run number {}".format(x)
+# 	for M, N in product(memory, nAgents[:len(nAgents)-1]):
+
+# 		i+=1
+
+# 		g = game.Game()
+# 		# g.addAgents('classic', N-1, M, S)
+# 		g.addAgents('producer', nAgents[-1], M, S)
+# 		g.addAgents('speculator', N, M, S, 0.01)
+# 		# g.addAgents('producer', int((N/2)+1), M)
+		
+# 		# make the last agent verbose so we can debug his decisions
+# 		# g.agents[-1].verbose = True
+
+# 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
+# 		g.runRounds(nRounds)
+		
+# 		saveDirname = '../data/more_producers_less_speculators/'
+# 		name = ['M', str(M), 'N', str(N+nAgents[-1), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), 'prod', str(nAgents[-1]), 'spec', str(N)]
+# 		name.append('.game')
+# 		g.saveResults('_'.join(name), saveDirname)
+# 		name.remove('.game')
+# 		name.append('.agents')
+# 		g.saveAgents('_'.join(name), saveDirname)
+# 		name.remove('.agents')
+# 		name.append('.score')
+# 		g.saveAgentsScores('_'.join(name), saveDirname)
+# 		name.remove('.score')
+
+# for x in range(runs):
+# 	print "Starting run number {}".format(x)
+# 	for M, N in product(memory, nAgents[:len(nAgents)-1]):
+
+# 		i+=1
+
+# 		g = game.Game()
+# 		# g.addAgents('classic', N-1, M, S)
+# 		g.addAgents('producer', N, M, S)
+# 		g.addAgents('speculator', nAgents[-1], M, S, 0.01)
+# 		# g.addAgents('producer', int((N/2)+1), M)
+		
+# 		# make the last agent verbose so we can debug his decisions
+# 		# g.agents[-1].verbose = True
+
+# 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
+# 		g.runRounds(nRounds)
+		
+# 		saveDirname = '../data/more_speculators_less_producers/'
+# 		name = ['M', str(M), 'N', str(N+nAgents[-1), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), 'prod', str(N), 'spec', str(nAgents[-1])]
+# 		name.append('.game')
+# 		g.saveResults('_'.join(name), saveDirname)
+# 		name.remove('.game')
+# 		name.append('.agents')
+# 		g.saveAgents('_'.join(name), saveDirname)
+# 		name.remove('.agents')
+# 		name.append('.score')
+# 		g.saveAgentsScores('_'.join(name), saveDirname)
+# 		name.remove('.score')
