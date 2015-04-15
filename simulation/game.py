@@ -39,6 +39,13 @@ class Game:
 			# args[4] = epsilon (control parameter for zero strategy)
 			for i in range(args[1]):
 				self.agents.append( agent.SpeculatorAgent(args[2], args[3], args[4]) )
+		elif(args[0] == 'community'):
+			# args[1] = numberOfAgents
+			# args[2] = brainSize
+			# args[3] = numberOfStrategies
+			for i in range(args[1]):
+				self.agents.append( agent.CAgent(args[2], args[3]) )
+			
 
 	def generateRandomHistory(self):
 		histRange = 16
@@ -53,9 +60,8 @@ class Game:
 		# elaborate agent decisions
 		att = []
 		for (i, ag) in enumerate(self.agents):
-			ag.makeDecision(self)
 			# get agents decision and append it to attendance list
-			att.append(ag.getDecision())
+			att.append( self.makeAgentsDecision(ag) )
 
 		# save attendance to the self.attendance list with the round number
 		# self.attendance.append((self.round, sum(att)))
@@ -65,14 +71,22 @@ class Game:
 		# correctDecision = 1 if ( self.attendance[-1][1] <= (len(self.agents)/2) ) else 0
 		self.calculateDecision()
 		self.history.append(self.correctDecision)
-		for ag in self.agents:
-			ag.updateState(self)
+		self.updateAgents()
 
 		self.round += 1
 
 	def runRounds(self, n):
 		for i in range(n):
 			self.runRound()
+
+	def makeAgentsDecision(self, agent):
+		# make the agents decision then return its result
+		agent.makeDecision(self)
+		return agent.getDecision()
+
+	def updateAgents(self):
+		for ag in self.agents:
+			ag.updateState(self)
 
 	def calculateDecision(self):
 		log.debug('Calculating correct decision inside game class')
@@ -113,3 +127,13 @@ class Game:
 				f.write(str(s.getStrat())  + '\n')
 
 			f.write("----------------------\n")
+
+class CGame(Game):
+	def __init__(self):
+		Game.__init__(self)
+
+	def makeAgentsDecision(self, agent):
+		return agent.getDecision()
+
+	def updateAgents(self):
+		pass

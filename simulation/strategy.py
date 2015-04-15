@@ -50,7 +50,7 @@ class ClassicStrat(Strategy):
 		log.info("Stategy generated: ")
 		log.info(self.strat)
 
-	def calculateDecision(self, hist):
+	def calculateDecision(self, hist, verbose=False):
 		# history is a list of integers, we convert them to a unified string
 		# and then convert to decimal integer that is the index of our strategy
 		tmpStr = []
@@ -63,6 +63,13 @@ class ClassicStrat(Strategy):
 		info = ''.join(tmpStr)
 		idx = int(info, 2)
 		self.decision = self.strat[idx]
+
+		if verbose:
+			print "Local + global {}, index {}".format(info, idx)
+			print "Strategy: {}".format(self.strat)
+			print "Decision made: {}".format(self.decision) 
+			print "Strategy score: {}".format(self.vScore)
+
 		
 	def updateState(self, round, correctDecision):
 		# payoff function is an increase or decrease by 1
