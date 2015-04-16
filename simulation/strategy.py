@@ -39,7 +39,12 @@ class ClassicStrat(Strategy):
 		self.generateStrategy()
 
 	def __str__(self):
-		return self.strat
+		rtnString = []
+		for i,s in enumerate(self.strat):
+			rtnString.extend([str(int(bin(i)[2:])), '->', str(s), '\n'])
+
+		rtn = ' '.join(rtnString)
+		return rtn 
 
 	def generateStrategy(self):
 		# generate random strategy that is saved as a list of 
