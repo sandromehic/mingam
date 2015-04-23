@@ -31,17 +31,24 @@ epsilon is the controll parameter, usually 0.01 or 0.1)
 gameInstance.addAgents('speculator', numberOfAgents, brainSize, numberOfStrategies, epsilon)
 '''
 
-saveDirname = generateFolderName('../data/', '')
-for run in range(runs):
-	for nOfAgents in N:
-		neighSize = generateNeighSize(nOfAgents)
-		print nOfAgents, neighSize
-		for nOfNeigh in neighSize:
-			i+=1
-			g, cgs = generateGameComunities(nOfAgents, M, S, nOfNeigh)
+# saveDirname = generateFolderName('../data/', '')
+# boltzmann folder
+saveDirname = generateFolderName('data/', '')
 
-			print "Starting the Game {} of total: {}".format(i, totalGames)
-			runComunityRound(g, cgs, nRounds)
-			
-			(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, nOfNeigh, run)
-			g.saveResults(gameName, saveDirname)
+
+for run in range(runs):
+	for brainSize in M:
+		for nOfAgents in N:
+			neighSize = generateNeighSize(nOfAgents)
+			neighSize.append(nOfAgents)
+			print nOfAgents, neighSize
+			for nOfNeigh in neighSize:
+				i+=1
+				# g, cgs = generateFixedGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+				g, cgs = generateCenteredGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+
+				print "Starting the Game {} of total: {}, number of cgames: {}".format(i, totalGames, len(cgs))
+				runComunityRound(g, cgs, nRounds)
+				
+				(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, nOfNeigh, run, brainSize)
+				g.saveResults(gameName, saveDirname)

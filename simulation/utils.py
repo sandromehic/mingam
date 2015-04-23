@@ -8,21 +8,19 @@ from math import ceil
 def getTotalGames():
 	t = 0
 	for n in N:
-		t += len(generateNeighSize(n))
+		t += len(generateNeighSize(n)) + 1
 
-	return runs * t
+	return runs * t * len(M)
 
 def assignCGameAgents(agents, cgame):
 	# print 'assigning agents {} to cgame {}'.format(agents, cgame)
 	for ag in agents:
 		ag.setCGame(cgame)
 
-def generateGameComunities(N, M, S, nOfNeigh):
+def generateFixedGameComunities(N, M, S, nOfNeigh):
 	g = game.Game()
 	g.addAgents('community', N, M, S)
-	cgs = []
-	for c in xrange(int(ceil(float(N)/nOfNeigh))):
-		cgs.append(game.CGame())
+	cgs = generateFixedCGames(N, nOfNeigh)
 
 	# print len(cgs)
 
@@ -31,6 +29,30 @@ def generateGameComunities(N, M, S, nOfNeigh):
 		assignCGameAgents(cg.agents, cg)
 
 	return g, cgs
+
+def generateFixedCGames(N, nOfNeigh):
+	cgs = []
+	for c in xrange(int(ceil(float(N)/nOfNeigh))):
+		cgs.append(game.CGame())
+
+	return cgs
+
+def generateCenteredGameComunities(N, M, S, nOfNeigh):
+	g = game.Game()
+	g.addAgents('community', N, M, S)
+	cgs = generateCenteredComunities(g.agents, nOfNeigh)
+
+	return g, cgs
+
+def generateCenteredComunities(agents, nOfNeigh):
+	cgs = []
+	roundAgents = agents[:] + agents[:nOfNeigh]
+	for (i,ag) in enumerate(agents):
+		cgs.append(game.CGame())
+		cgs[i].agents = roundAgents[i:i+nOfNeigh]
+		assignCGameAgents(cgs[i].agents, cgs[i])
+
+	return cgs
 
 def runComunityRound(g, cgs, nRounds):
 	for k in range(nRounds):
@@ -50,8 +72,8 @@ def printAgentsAndGames(game, cgames):
 			# print a
 			pass
 
-def getSaveNamesCommunity(firstname, nOfAgents, nOfNeigh, run):
-	name = [firstname, 'M', str(M), 'N', str(nOfAgents), 'neighs', str(nOfNeigh), 'S', str(S), 'rounds', str(nRounds), 'run', str(run)]
+def getSaveNamesCommunity(firstname, nOfAgents, nOfNeigh, run, brainSize):
+	name = [firstname, 'M', str(brainSize), 'N', str(nOfAgents), 'neighs', str(nOfNeigh), 'S', str(S), 'rounds', str(nRounds), 'run', str(run)]
 	name.append('.game')
 	gameName = '_'.join(name)
 	name.remove('.game')
@@ -95,10 +117,10 @@ def getHalfStrategy(strat):
 
 
 # GLOBAL CONFIGURATION
-M = 3
-N = [201]
+M = range(2,11)
+N = [51]
 # neighSize = [3,5]
-nRounds = 10000
+nRounds = 100
 S = 2
 i = 0
 runs = 10
