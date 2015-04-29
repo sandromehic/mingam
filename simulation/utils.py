@@ -4,6 +4,7 @@ import math
 import os
 import datetime
 from math import ceil
+import vonNeumann
 
 def getTotalGames():
 	t = 0
@@ -115,13 +116,31 @@ def getHalfStrategy(strat):
 	else:
 		return False
 
+def generateVonNeumannGameComunities(nOfAgents, brainSize, S, vonNeumannRadius):
+	g = game.Game()
+	g.addAgents('community', nOfAgents, brainSize, S)
+
+	neigh = vonNeumann.generateVonNeumann(g.agents,vonNeumannRadius)
+	cgs = generateVonNeumannCGames(neigh)
+
+	return g, cgs
+
+def generateVonNeumannCGames(neigh):
+	cgs = []
+	for i, ag in enumerate(neigh):
+		cgs.append(game.CGame())
+		cgs[i].agents = neigh[ag]
+		assignCGameAgents(cgs[i].agents, cgs[i])
+
+	return cgs
 
 # GLOBAL CONFIGURATION
-M = range(2,11)
-N = [51]
-# neighSize = [3,5]
-nRounds = 100
+M = range(2,7)
+N = [403]
+nRounds = 1000
 S = 2
 i = 0
 runs = 10
 totalGames = getTotalGames()
+dVonNeumann = range(1,7)
+totalGamesVonNeumann = runs * len(M) * (len(N)+1) * len(dVonNeumann)

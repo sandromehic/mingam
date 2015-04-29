@@ -1,36 +1,49 @@
-import game
+# import game
 
-def generateGameComunities(N, M, S, nOfNeigh):
-	g = game.Game()
-	g.addAgents('community', N, M, S)
-	cgs = []
-	for c in xrange((N + nOfNeigh // 2) // nOfNeigh):
-		cgs.append(game.CGame())
+# def generateGameComunities(N, M, S, nOfNeigh):
+# 	g = game.Game()
+# 	g.addAgents('community', N, M, S)
+# 	cgs = []
+# 	for c in xrange((N + nOfNeigh // 2) // nOfNeigh):
+# 		cgs.append(game.CGame())
 
-	print len(cgs)
+# 	print len(cgs)
 
-	for i, cg in enumerate(cgs):
-		cg.agents = g.agents[i*nOfNeigh:i*nOfNeigh + nOfNeigh]
+# 	for i, cg in enumerate(cgs):
+# 		cg.agents = g.agents[i*nOfNeigh:i*nOfNeigh + nOfNeigh]
 
-	return g, cgs
+# 	return g, cgs
 
-def printAgentsAndGames(game, cgames):
-	print "Main game: {} agents".format(len(game.agents))
-	for a in game.agents:
-		# print a
-		pass
+# def printAgentsAndGames(game, cgames):
+# 	print "Main game: {} agents".format(len(game.agents))
+# 	for a in game.agents:
+# 		# print a
+# 		pass
 
-	for i, cg in enumerate(cgames):
-		print "Cgame number {}: {} agents".format(i, len(cg.agents))
-		for a in cg.agents:
-			# print a
-			pass
+# 	for i, cg in enumerate(cgames):
+# 		print "Cgame number {}: {} agents".format(i, len(cg.agents))
+# 		for a in cg.agents:
+# 			# print a
+# 			pass
 
-M = 2
-N = 101
-neighSize = range(3,19,2)
-S = 5
+# M = 2
+# N = 101
+# neighSize = range(3,19,2)
+# S = 5
 
-for nOfNeigh in neighSize:
-	g, cgs = generateGameComunities(N, M, S, nOfNeigh)
-	printAgentsAndGames(g, cgs)
+# for nOfNeigh in neighSize:
+# 	g, cgs = generateGameComunities(N, M, S, nOfNeigh)
+# 	printAgentsAndGames(g, cgs)
+
+def getPQ(n):
+	r = []
+	for p in xrange(3,(n/3)):
+		if (n%p) == 0:
+			r.append((p,(n/p)))
+
+	return r
+
+n = range(391,411,2)
+for m in range(n):
+	r = getPQ(n)
+	print r
