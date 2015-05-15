@@ -5,6 +5,7 @@ import os
 import datetime
 from math import ceil
 import vonNeumann
+import networkx as nx
 
 def getTotalGames():
 	t = 0
@@ -55,6 +56,40 @@ def generateCenteredComunities(agents, nOfNeigh):
 
 	return cgs
 
+def generateBarabasiAlbertGame(N, M, S, nOfNeigh):
+	g = game.Game()
+	g.addAgents('community', N, M, S)
+	cgs = generateBarabasiComunities(g.agents, nOfNeigh)
+
+	return g, cgs
+
+def generateBarabasiComunities(agents, nOfNeigh):
+	# here we create a barabasi albert graph with N nodes
+	# and nOfNeigh-1 connections per new graph. nOfNeigh
+	# passed to the function will be an odd number, so we pass
+	# nOfNeigh-1 as barabasi albert graph does not account
+	# for the node being added as a part of community
+	ba = nx.barabasi_albert_graph(len(agents), nOfNeigh-1)
+	cgs = getcgamesFromGraph(agents, ba)
+
+def generateWattsStrogatzComunities(agents, nOfNeigh):
+	# here we create Watts Strogatz graph with N nodes
+	# and each node should have nOfNeigh nearest neighbours
+	# that are mixed with p probability
+	ws = nx.watts_strogatz_graph(len(agents), nOfNeigh)
+
+def getcgamesFromGraph(agents, grph)
+	cgs = []
+	for (i, ag) in enumerate(agents):
+		cgs.append(game.CGame())
+		cgs[i].agents.append(ag)
+		for nIdx in grph.neighbors(i):
+			cgs[i].agents.append(agents[nIdx])
+
+		assignCGameAgents(cgs[i].agents, cgs[i])
+
+	return cgs
+
 def runComunityRound(g, cgs, nRounds):
 	for k in range(nRounds):
 		g.runRound()
@@ -85,6 +120,13 @@ def getSaveNamesCommunity(firstname, nOfAgents, nOfNeigh, run, brainSize):
 	scoreName = '_'.join(name)
 	name.remove('.score')
 	return (gameName, agentsName, scoreName)
+
+def getComunitySaveName(firstname, nOfAgents, nOfNeigh, run, brainSize):
+	name = [firstname, 'M', str(brainSize), 'N', str(nOfAgents), 'neighs', str(nOfNeigh), 'S', str(S), 'rounds', str(nRounds), 'run', str(run)]
+	name.append('.comunity')
+	saveName = '_'.join(name)
+	name.remove('.comunity')
+	return saveName
 
 def generateFolderName(base, name):
 	dirname = base + str(datetime.datetime.now()) + '_' + name
@@ -135,9 +177,9 @@ def generateVonNeumannCGames(neigh):
 	return cgs
 
 # GLOBAL CONFIGURATION
-M = range(2,3)
-N = [43]
-nRounds = 1000
+M = range(2,9)
+N = [403]
+nRounds = 10000
 S = 2
 i = 0
 runs = 10

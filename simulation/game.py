@@ -2,7 +2,7 @@ import logging as log
 import agent
 import numpy as np
 import pandas as pd
-
+ 
 class Game:
 	def __init__(self):
 		log.info("Starting the Game class")
@@ -45,13 +45,7 @@ class Game:
 			# args[3] = numberOfStrategies
 			for i in range(args[1]):
 				self.agents.append( agent.CAgent(args[2], args[3]) )
-		elif(args[0] == 'intelligent'):
-			# args[1] = numberOfAgents
-			# args[2] = brainSize
-			# args[3] = learningRate
-			for i in range(args[1]):
-				self.agents.append( agent.IntelligentAgent(args[2], args[3]) )
-
+			
 
 	def generateRandomHistory(self):
 		histRange = 16
@@ -101,17 +95,32 @@ class Game:
 		for a in self.agents:
 			# if agent participated at this round
 			# else his decison is None and should
-			# not be included in calculating attendance
+			# not be included in calculating attendance 
 			desc = a.getDecision()
 			if (desc is not None): att.append(desc)
 
 		log.debug(att)
 		self.correctDecision = 1 if ( sum(att)<=len(att)/2 ) else 0
+		# if the number of agents is pair, decision can become random
+		if sum(att) == float(len(att))/2:
+			self.correctDecision = np.random.randint(2) 
 		log.debug(self.correctDecision)
 
 	def saveResults(self, filename, dirname):
 		out = pd.DataFrame(self.rounds)
 		out.to_csv(dirname + filename)
+
+	def saveNumberOfComunities(self, filename, dirname):
+		# use only if there are comunity games
+		# otherwise it will fail
+		out = {}
+		for a in self.agents:
+			name = str(a.type) + str(a.id)
+			out[name] = len(a.cgame.agents)
+
+		out = pd.DataFrame(out.items(), columns=['Agent', 'Vicinity'])
+		out.to_csv(dirname + filename)
+
 
 	def saveAgentsScores(self, filename, dirname):
 		out = {}
@@ -127,7 +136,7 @@ class Game:
 		f.write("History: \n")
 		f.write(str(self.history) + '\n')
 		for ag in self.agents:
-			f.write("Agent id: " + str(ag.id) + "\n")
+			f.write("Agent id: " + str(ag.id) + "\n") 
 			for (i, s) in enumerate(ag.strats):
 				f.write("Strategy {} has virtual score {} \n".format(i, s.getVScore()))
 				f.write(str(s.getStrat())  + '\n')
