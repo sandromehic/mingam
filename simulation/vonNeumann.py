@@ -42,7 +42,7 @@ def intFactorizeRestfull(n, d):
 def generateSupportGrid(lst, d):
 	n = len(lst)
 	(p,q) = intFactorize(n,d)
-	if (p == n and q == 1):		
+	if (p == n and q == 1):
 		print "Integer factorization of {} not possible!".format(n)
 	else:
 		# print (p,q)

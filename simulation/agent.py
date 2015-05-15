@@ -5,10 +5,10 @@ from random import randrange
 from numpy import sign
 
 class Agent:
-	def __init__(self, agentType):		
+	def __init__(self, agentType):
 		self.type = agentType
 		self.id = self.generateID()
-		self.history = []		
+		self.history = []
 		self.score = [0]
 		self.verbose = False
 		log.info("Creating agent of type " + self.type)
@@ -135,7 +135,7 @@ class ProducerAgent(ClassicAgent):
 
 ''' Speculator Agent
 	Use in a MG to simulate markets, it participates
-	in the game with only multiple strategies, 
+	in the game with only multiple strategies,
 	but only when it has a strategy that will give him
 	benefit.
 '''
@@ -226,3 +226,35 @@ class CAgent(ClassicAgent):
 			f.write("----------------------------------------\n")
 
 		f.write("____________________________________________\n")
+
+
+class IntelligentAgent(ClassicAgent):
+	def __init__(self, brainSize, learningRate):
+		Agent.__init__(self, "intelligent")
+		self.brainSize = brainSize
+		self.learningRate = learningRate
+		# decision and history
+		self.decision = 0
+		# dHistory is a list of tuple (roundNumber, agentDecision)
+		self.dHistory = []
+		# strategy
+		self.strategy = self.generateStrategy()
+
+	def generateStrategy(self):
+		return strategy.IntelligentStrat(self.brainSize, self.learningRate)
+
+	def makeDecision(self, game):
+		self.strategy.calculateDecision( self.getCurrentHistory(game) )
+		self.decision = self.strategy.getDecision()
+
+	def updateState(self, game):
+		# add current decision to the agents history
+		self.dHistory.append((game.round, self.decision))
+		# update the score, if agent won +1 or -1 if lost
+		# correctDecision = 1 if ( game.attendance[-1][1] <= (len(game.agents)/2) ) else 0
+		if self.decision == game.correctDecision:
+			self.score.append(self.score[-1] + 1)
+		else:
+			self.score.append(self.score[-1] - 1)
+		# update all the strategy scores
+		self.strategy.updateState(game.round, game.correctDecision)

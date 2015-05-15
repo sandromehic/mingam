@@ -135,8 +135,8 @@ def generateVonNeumannCGames(neigh):
 	return cgs
 
 # GLOBAL CONFIGURATION
-M = range(2,7)
-N = [403]
+M = range(2,3)
+N = [43]
 nRounds = 1000
 S = 2
 i = 0

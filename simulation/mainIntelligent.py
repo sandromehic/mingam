@@ -1,6 +1,5 @@
 import logging as log
 import argparse
-from utils import *
 import game
 from itertools import product
 
@@ -31,24 +30,27 @@ epsilon is the controll parameter, usually 0.01 or 0.1)
 gameInstance.addAgents('speculator', numberOfAgents, brainSize, numberOfStrategies, epsilon)
 '''
 
-saveDirname = generateFolderName('../data/', '')
-# boltzmann folder
-# saveDirname = generateFolderName('data/', '')
+memory = [5]
+nAgents = [100]
+nRounds = 1000
+epsilon = 0.05
+runs = 1
+S = 2
 
+i = 0
+totalGames = len(memory) * len(nAgents) * runs
 
-for run in range(runs):
-	for brainSize in M:
-		for nOfAgents in N:
-			neighSize = generateNeighSize(nOfAgents)
-			neighSize.append(nOfAgents)
-			print nOfAgents, neighSize
-			for nOfNeigh in neighSize:
-				i+=1
-				# g, cgs = generateFixedGameComunities(nOfAgents, brainSize, S, nOfNeigh)
-				g, cgs = generateCenteredGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+for x in range(runs):
+	print "Starting run number {}".format(x)
+	for M, N in product(memory, nAgents):
 
-				print "Starting the Game {} of total: {}, number of cgames: {}".format(i, totalGames, len(cgs))
-				runComunityRound(g, cgs, nRounds)
-				
-				(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, nOfNeigh, run, brainSize)
-				g.saveResults(gameName, saveDirname)
+		i+=1
+
+		g = game.Game()
+		g.addAgents('classic', N-1, M, S)
+		g.addAgents('intelligent', 1, M, epsilon)
+
+		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
+		g.runRounds(nRounds)
+
+g.agents[-1].strategy.printInitialAndFinal()
