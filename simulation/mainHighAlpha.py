@@ -3,6 +3,7 @@ import argparse
 from utils import *
 import game
 from itertools import product
+import datetime
 
 ''' parse input arguments
 	mainly for verbose option
@@ -34,7 +35,8 @@ gameInstance.addAgents('speculator', numberOfAgents, brainSize, numberOfStrategi
 saveDirname = generateFolderName('../data/', '')
 # boltzmann folder
 # saveDirname = generateFolderName('data/', '')
-
+M = [9,10,11]
+N = [41]
 
 for run in range(runs):
 	for brainSize in M:
@@ -44,10 +46,10 @@ for run in range(runs):
 			print nOfAgents, neighSize
 			for nOfNeigh in neighSize:
 				i+=1
-				# g, cgs = generateFixedGameComunities(nOfAgents, brainSize, S, nOfNeigh)
-				g, cgs = generateCenteredGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+				g, cgs = generateFixedGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+# 				g, cgs = generateCenteredGameComunities(nOfAgents, brainSize, S, nOfNeigh)
 
-				print "Starting the Game {} of total: {}, number of cgames: {}".format(i, totalGames, len(cgs))
+				print "{} - Starting the Game {} of total: {}, number of cgames: {}".format(datetime.datetime.now(), i, totalGames, len(cgs))
 				runComunityRound(g, cgs, nRounds)
 
 				(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, nOfNeigh, run, brainSize)

@@ -63,7 +63,7 @@ class ClassicAgent(Agent):
 			# don't pass useless history, only the latest
 			verb = True if self.verbose else 0
 			if verb: print "Agent decision making at round {}".format(game.round)
-			s.calculateDecision( self.getCurrentHistory(game), verb )
+			s.calculateDecision( self.getCurrentHistory(game) )
 			vscores.append(s.getVScore())
 
 		# find the best strategy and its decision

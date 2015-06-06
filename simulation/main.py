@@ -1,7 +1,9 @@
 import logging as log
 import argparse
+from utils import *
 import game
 from itertools import product
+import datetime
 
 ''' parse input arguments
 	mainly for verbose option
@@ -30,136 +32,21 @@ epsilon is the controll parameter, usually 0.01 or 0.1)
 gameInstance.addAgents('speculator', numberOfAgents, brainSize, numberOfStrategies, epsilon)
 '''
 
-# nAgents = [101]
-# nAgents = range(21,51, 12)
-# nAgents.extend(range(51,261,50))
-# nAgents.extend(range(51,501,50))
-# nAgents.extend(range(501,801,100))
-# nAgents.extend(range(1001,2001,250))
-memory = [5]
-nAgents = [2**a for a in range(4,10)]
-# memory = range(2,13)
-nRounds = 1000
-runs = 6
-S = 2
+saveDirname = generateFolderName('../data/', '')
+# boltzmann folder
+# saveDirname = generateFolderName('data/', '')
+M = [4,6]
+totalGames = runs * len(M) * len(N)
 
-i = 0
-totalGames = len(memory) * len(nAgents) * runs
-# totalGames2 = len(memory) * len(nAgents[:len(nAgents)-1]) * runs
-# totalGames = totalGames + 2*totalGames2	
+for run in range(runs):
+	for brainSize in M:
+		for nOfAgents in N:
+			i+=1
+			g = game.Game()
+			g.addAgents('classic', nOfAgents, brainSize, S)
+			print "{} - Starting the Game {} of total: {}".format(datetime.datetime.now(), i, totalGames)
 
-# for x in range(runs):
-# 	print "Starting run number {}".format(x)
-# 	for M, N in product(memory, nAgents):
+			g.runRounds(nRounds)
 
-# 		i+=1
-
-# 		g = game.Game()
-# 		g.addAgents('classic', N, M, S)
-		
-# 		# make the last agent verbose so we can debug his decisions
-# 		# g.agents[-1].verbose = True
-
-# 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
-# 		g.runRounds(nRounds)
-		
-# 		saveDirname = '../data/different_brainsize/'
-# 		name = ['M', str(M), 'N', str(N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), '.game']
-# 		g.saveResults('_'.join(name), saveDirname)
-		
-# 		name = ['M', str(M), 'N', str(N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), '.agents']
-# 		g.saveAgents('_'.join(name), saveDirname)
-
-# 		name = ['M', str(M), 'N', str(N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), '.score']
-# 		g.saveAgentsScores('_'.join(name), saveDirname)
-#  		# g.printTest()
-
-# for x in range(runs):
-# 	print "Starting run number {}".format(x)
-# 	for M, N in product(memory, nAgents):
-
-# 		i+=1
-
-# 		g = game.Game()
-# 		# g.addAgents('classic', N-1, M, S)
-# 		g.addAgents('producer', N, M, S)
-# 		g.addAgents('speculator', N, M, S, 0.01)
-# 		# g.addAgents('producer', int((N/2)+1), M)
-		
-# 		# make the last agent verbose so we can debug his decisions
-# 		# g.agents[-1].verbose = True
-
-# 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
-# 		g.runRounds(nRounds)
-		
-# 		saveDirname = '../data/same_producers_speculators/'
-# 		name = ['M', str(M), 'N', str(N+N), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), 'prod', str(N), 'spec', str(N)]
-# 		name.append('.game')
-# 		g.saveResults('_'.join(name), saveDirname)
-# 		name.remove('.game')
-# 		name.append('.agents')
-# 		g.saveAgents('_'.join(name), saveDirname)
-# 		name.remove('.agents')
-# 		name.append('.score')
-# 		g.saveAgentsScores('_'.join(name), saveDirname)
-# 		name.remove('.score')
-
-for x in range(runs):
-	print "Starting run number {}".format(x)
-	for M, N in product(memory, nAgents[:len(nAgents)-1]):
-
-		i+=1
-
-		g = game.Game()
-		# g.addAgents('classic', N-1, M, S)
-		g.addAgents('producer', nAgents[-1], M, S)
-		g.addAgents('speculator', N, M, S, 0)
-		# g.addAgents('producer', int((N/2)+1), M)
-		
-		# make the last agent verbose so we can debug his decisions
-		# g.agents[-1].verbose = True
-
-		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
-		g.runRounds(nRounds)
-		
-		saveDirname = '../data/less_speculators_epsilon_zero/'
-		name = ['M', str(M), 'N', str(N+nAgents[-1]), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), 'prod', str(nAgents[-1]), 'spec', str(N)]
-		name.append('.game')
-		g.saveResults('_'.join(name), saveDirname)
-		name.remove('.game')
-		name.append('.agents')
-		g.saveAgents('_'.join(name), saveDirname)
-		name.remove('.agents')
-		name.append('.score')
-		g.saveAgentsScores('_'.join(name), saveDirname)
-		name.remove('.score')
-
-# for x in range(runs):
-# 	print "Starting run number {}".format(x)
-# 	for M, N in product(memory, nAgents[:len(nAgents)-1]):
-
-# 		i+=1
-
-# 		g = game.Game()
-# 		# g.addAgents('classic', N-1, M, S)
-# 		g.addAgents('producer', N, M, S)
-# 		g.addAgents('speculator', nAgents[-1], M, S, 0.01)
-# 		# g.addAgents('producer', int((N/2)+1), M)
-		
-# 		# make the last agent verbose so we can debug his decisions
-# 		# g.agents[-1].verbose = True
-
-# 		print "Running game {} of {}, memory {}, agents {}, run number {}".format(i, totalGames, M, N, x)
-# 		g.runRounds(nRounds)
-		
-# 		saveDirname = '../data/more_speculators_less_producers/'
-# 		name = ['M', str(M), 'N', str(N+nAgents[-1), 'S', str(S), 'rounds', str(nRounds), 'run', str(x), 'prod', str(N), 'spec', str(nAgents[-1])]
-# 		name.append('.game')
-# 		g.saveResults('_'.join(name), saveDirname)
-# 		name.remove('.game')
-# 		name.append('.agents')
-# 		g.saveAgents('_'.join(name), saveDirname)
-# 		name.remove('.agents')
-# 		name.append('.score')
-# 		g.saveAgentsScores('_'.join(name), saveDirname)
-# 		name.remove('.score')
+			(gameName, agentsName, scoreName) = getSaveNames('game_'+str(i), nOfAgents, run, brainSize)
+			g.saveResults(gameName, saveDirname)

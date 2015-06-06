@@ -6,6 +6,8 @@ import datetime
 from math import ceil
 import vonNeumann
 import networkx as nx
+import numpy.random as nprnd
+import numpy as np
 
 def getTotalGames():
 	t = 0
@@ -56,6 +58,71 @@ def generateCenteredComunities(agents, nOfNeigh):
 
 	return cgs
 
+def generateHierarchicalGame(N, M, S, nOfNeigh, beta, nOfCommunities):
+	g = game.Game()
+	g.addAgents('community', N, M, S)
+	cgs, meanDegree = generateHierarchicalComunities(g.agents, nOfNeigh, beta, nOfCommunities)
+
+	return g, cgs, meanDegree
+
+def generateHierarchicalComunities(agents, nOfNeigh, beta, nOfCommunities):
+	hg = hierarchicalGraph(len(agents), nOfNeigh, beta, nOfCommunities)
+	meanDegree = int(round(np.average(hg.degree().values())))
+	cgs = getcgamesFromGraph(agents, hg)
+	return cgs, meanDegree
+
+def hierarchicalGraph(n, k, beta, nOfCommunities):
+	div = getDivArray(n,nOfCommunities)
+	print div, k
+	graphs = []
+	for x in div:
+		newG = nx.barabasi_albert_graph(x, k)
+		# add edges between initial k nodes, and on the diagonal
+		newG = normalizeBarabasi(newG, k)
+		graphs.append(newG)
+
+	f = nx.Graph()
+	for g in graphs:
+		idx = len(f.nodes())
+		newNodes = [x+idx for x in g.nodes()]
+		newEdges = [(x+idx,y+idx) for (x,y) in g.edges()]
+		f.add_nodes_from(newNodes)
+		f.add_edges_from(newEdges)
+
+	support_f = f.copy()
+	for e in support_f.edges():
+		if beta > nprnd.uniform():
+			f = changeEdge(f,e)
+
+	return f
+
+def normalizeBarabasi(g, k):
+	for i in range(k):
+		for j in range(k):
+			g.add_edge(i,j)
+	for i in g.nodes():
+		g.add_edge(i,i)
+
+	return g
+
+def getDivArray(n,k):
+	div = n/k
+	asd = [div] * k
+	if n%k != 0:
+		asd[-1] = asd[-1] + (n%k)
+
+	return asd
+
+def changeEdge(g, e):
+    x, y = e
+    k = nprnd.randint(len(g.nodes()))
+    while(k==x or (x,k) in g.edges()):
+        k = nprnd.randint(len(g.nodes()))
+
+    g.remove_edge(x,y)
+    g.add_edge(x,k)
+    return g
+
 def generateBarabasiAlbertGame(N, M, S, nOfNeigh):
 	g = game.Game()
 	g.addAgents('community', N, M, S)
@@ -71,14 +138,61 @@ def generateBarabasiComunities(agents, nOfNeigh):
 	# for the node being added as a part of community
 	ba = nx.barabasi_albert_graph(len(agents), nOfNeigh-1)
 	cgs = getcgamesFromGraph(agents, ba)
+	return cgs
 
-def generateWattsStrogatzComunities(agents, nOfNeigh):
+def generateWattsStrogatzGame(N, M, S, nOfNeigh, beta):
+	g = game.Game()
+	g.addAgents('community', N, M, S)
+	cgs = generateWattsStrogatzComunities(g.agents, nOfNeigh-1, beta)
+
+	return g, cgs
+
+def generateWattsStrogatzComunities(agents, nOfNeigh, beta):
 	# here we create Watts Strogatz graph with N nodes
 	# and each node should have nOfNeigh nearest neighbours
 	# that are mixed with p probability
-	ws = nx.watts_strogatz_graph(len(agents), nOfNeigh)
+	ws = nx.watts_strogatz_graph(len(agents), nOfNeigh, beta)
+	ws = normalizeGraphEdges(ws)
+	cgs = getcgamesFromGraph(agents, ws)
+	return cgs
 
-def getcgamesFromGraph(agents, grph)
+# used to make the neighborhood a pair number (odd including the node)
+def normalizeGraphEdges(gr):
+	upperlimit = 3
+	for i in range(upperlimit):
+		if checkOddness(gr)>2:
+			gr = normalizeGraphEdgesIter(gr)
+
+	return gr
+
+def normalizeGraphEdgesIter(gr):
+	oddNeighbors = []
+	upperlimit = 5
+	for node in gr.nodes():
+		if (len(gr.neighbors(node))%2 != 0):
+			oddNeighbors.append(node)
+
+	for i, node in enumerate(oddNeighbors):
+		if (len(gr.neighbors(node))%2 != 0 and len(oddNeighbors)>2):
+			for j in range(upperlimit):
+				randomIdx = nprnd.randint(len(oddNeighbors))
+				if (randomIdx == i or randomIdx in gr.neighbors(node)):
+					randomIdx = nprnd.randint(len(oddNeighbors))
+				else:
+					gr.add_edge(node, randomIdx)
+					break
+
+	return gr
+
+def checkOddness(gr):
+	oddNeighbors = []
+	for node in gr.nodes():
+		if (len(gr.neighbors(node))%2 != 0):
+			oddNeighbors.append(node)
+
+	return len(oddNeighbors)
+
+def getcgamesFromGraph(agents, grph):
 	cgs = []
 	for (i, ag) in enumerate(agents):
 		cgs.append(game.CGame())
@@ -107,6 +221,19 @@ def printAgentsAndGames(game, cgames):
 		for a in cg.agents:
 			# print a
 			pass
+
+def getSaveNames(firstname, nOfAgents, run, brainSize):
+	name = [firstname, 'M', str(brainSize), 'N', str(nOfAgents), 'S', str(S), 'rounds', str(nRounds), 'run', str(run)]
+	name.append('.game')
+	gameName = '_'.join(name)
+	name.remove('.game')
+	name.append('.agents')
+	agentsName = '_'.join(name)
+	name.remove('.agents')
+	name.append('.score')
+	scoreName = '_'.join(name)
+	name.remove('.score')
+	return (gameName, agentsName, scoreName)
 
 def getSaveNamesCommunity(firstname, nOfAgents, nOfNeigh, run, brainSize):
 	name = [firstname, 'M', str(brainSize), 'N', str(nOfAgents), 'neighs', str(nOfNeigh), 'S', str(S), 'rounds', str(nRounds), 'run', str(run)]
@@ -177,12 +304,12 @@ def generateVonNeumannCGames(neigh):
 	return cgs
 
 # GLOBAL CONFIGURATION
-M = range(2,9)
+M = range(2,5)
 N = [403]
 nRounds = 10000
 S = 2
 i = 0
-runs = 10
+runs = 12
 totalGames = getTotalGames()
 dVonNeumann = range(1,7)
 totalGamesVonNeumann = runs * len(M) * (len(N)+1) * len(dVonNeumann)

@@ -1,8 +1,9 @@
 import logging as log
 import argparse
-from utils import *
 import game
 from itertools import product
+from utils import *
+import datetime
 
 ''' parse input arguments
 	mainly for verbose option
@@ -31,24 +32,30 @@ epsilon is the controll parameter, usually 0.01 or 0.1)
 gameInstance.addAgents('speculator', numberOfAgents, brainSize, numberOfStrategies, epsilon)
 '''
 
-saveDirname = generateFolderName('../data/', '')
-# boltzmann folder
-# saveDirname = generateFolderName('data/', '')
+memory = [5]
+nOfSpeculators = 300
+nOfProducers = 10
+epsilon = 0.01
+nRounds = 100000
+runs = 3
+S = 2
 
+saveDirname =  generateFolderName('../data/', '')
 
-for run in range(runs):
-	for brainSize in M:
-		for nOfAgents in N:
-			neighSize = generateNeighSize(nOfAgents)
-			neighSize.append(nOfAgents)
-			print nOfAgents, neighSize
-			for nOfNeigh in neighSize:
-				i+=1
-				# g, cgs = generateFixedGameComunities(nOfAgents, brainSize, S, nOfNeigh)
-				g, cgs = generateCenteredGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+i = 0
+totalGames = len(memory) * runs
 
-				print "Starting the Game {} of total: {}, number of cgames: {}".format(i, totalGames, len(cgs))
-				runComunityRound(g, cgs, nRounds)
+for x in range(runs):
+	print "{} - Starting run number {}".format(datetime.datetime.now(), x)
+	for M in memory:
+		i+=1
 
-				(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, nOfNeigh, run, brainSize)
-				g.saveResults(gameName, saveDirname)
+		g = game.Game()
+		g.addAgents('producer', nOfProducers, M, S)
+		g.addAgents('speculator', nOfSpeculators, M, S, epsilon)
+
+		print "Running game {} of {}, memory {}, run number {}".format(i, totalGames, M, x)
+		g.runRounds(nRounds)
+
+		(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfProducers, nOfSpeculators, x, brainSize)
+		g.saveResults(gameName, saveDirname)

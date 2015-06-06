@@ -3,6 +3,8 @@ import argparse
 from utils import *
 import game
 from itertools import product
+import datetime
+import numpy as np
 
 ''' parse input arguments
 	mainly for verbose option
@@ -31,24 +33,54 @@ epsilon is the controll parameter, usually 0.01 or 0.1)
 gameInstance.addAgents('speculator', numberOfAgents, brainSize, numberOfStrategies, epsilon)
 '''
 
-saveDirname = generateFolderName('../data/', '')
-# boltzmann folder
-# saveDirname = generateFolderName('data/', '')
+def generateBarabasiNeighSize(n):
+	k = []
+	md = []
+	for x in range(1,n):
+		g = nx.barabasi_albert_graph(n,x)
+		for i in range(x):
+			for j in range(x):
+				g.add_edge(i,j)
 
+		for i in g.nodes():
+			g.add_edge(i,i)
+
+		meanD = int(round(np.average(g.degree().values())))
+# 		if x<7:
+# 				k.append(x)
+# 				md.append(meanD)
+# 				continue
+
+		if meanD%2!=0 and meanD not in md:
+				k.append(x)
+				md.append(meanD)
+
+	return k
+
+# boltzmann folder
+saveDirname = generateFolderName('data/', '')
+# saveDirname = generateFolderName('../data/', '')
+beta = 0.15
+nOfCommunities = 10
+M = [2]
+N = [401]
+nRounds = 10000
+S = 2
+i = 0
+runs = 16
+totalHierarchicalGames = runs * len(M) * len(N) * len(generateBarabasiNeighSize(N[0]/nOfCommunities))
 
 for run in range(runs):
 	for brainSize in M:
 		for nOfAgents in N:
-			neighSize = generateNeighSize(nOfAgents)
-			neighSize.append(nOfAgents)
-			print nOfAgents, neighSize
-			for nOfNeigh in neighSize:
+			k = generateBarabasiNeighSize(nOfAgents/nOfCommunities)
+			print nOfAgents, k
+			for nOfNeigh in k:
 				i+=1
-				# g, cgs = generateFixedGameComunities(nOfAgents, brainSize, S, nOfNeigh)
-				g, cgs = generateCenteredGameComunities(nOfAgents, brainSize, S, nOfNeigh)
+				g, cgs, meanDegree = generateHierarchicalGame(nOfAgents, brainSize, S, nOfNeigh, beta, nOfCommunities)
 
-				print "Starting the Game {} of total: {}, number of cgames: {}".format(i, totalGames, len(cgs))
+				print "{} - Starting the Game {} of total: {}, number of cgames: {}".format(datetime.datetime.now(), i, totalHierarchicalGames, len(cgs))
 				runComunityRound(g, cgs, nRounds)
 
-				(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, nOfNeigh, run, brainSize)
+				(gameName, agentsName, scoreName) = getSaveNamesCommunity('game_'+str(i), nOfAgents, meanDegree, run, brainSize)
 				g.saveResults(gameName, saveDirname)
